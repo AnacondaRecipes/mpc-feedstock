@@ -20,9 +20,10 @@ build:
 
 requirements:
   build:
-    - toolchain
+    - {{ compiler('c') }}
     - m4              # [unix]
     - libtool         # [unix]
+  host:
     - gmp >=5.0.1,<7  # [unix]
     - mpir            # [win]
     - mpfr 3.*
