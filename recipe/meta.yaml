@@ -49,6 +49,13 @@ about:
   license: LGPL 3
   license_file: {{ SRC_DIR }}/COPYING.LESSER
   summary: A C library for the arithmetic of complex numbers with arbitrarily high precision.
+  description: |
+    GNU MPC is a portable library written in C for arbitrary precision arithmetic on complex 
+    numbers providing correct rounding. It implements a multiprecision equivalent of the C99 
+    standard. It builds upon the GNU MP and the GNU MPFR libraries.
+  doc_url: http://www.multiprecision.org/index.php?prog=mpc&page=html
+  dev_url: https://gforge.inria.fr/scm/browser.php?group_id=131
+  doc_source_url: 
 
 extra:
   recipe-maintainers:
