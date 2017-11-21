@@ -13,10 +13,8 @@ source:
   sha256: acc13357573d2ba542d93d1506f905bc7781ba9396fb21c5772c66c7048d7c53  # [win]
 
 build:
-  number: 4
-  features:
-    - vc14            # [win]
-  msvc_compiler: 14.0
+  number: 5
+  skip: True   # [win and vc < 14]
 
 requirements:
   build:
@@ -26,12 +24,11 @@ requirements:
   host:
     - gmp >=5.0.1,<7  # [unix]
     - mpir            # [win]
-    - mpfr 3.*
+    - mpfr
   run:
     - gmp >=5.0.1,<7  # [unix]
     - mpir            # [win]
-    - vc 14           # [win]
-    - mpfr 3.*
+    - mpfr
 
 test:
   commands:
