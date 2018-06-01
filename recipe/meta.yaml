@@ -21,6 +21,7 @@ requirements:
     - {{ compiler('c') }}
     - m4              # [unix]
     - libtool         # [unix]
+    - make            # [unix]
   host:
     - gmp             # [unix]
     - mpir            # [win]
