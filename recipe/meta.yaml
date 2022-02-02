@@ -25,7 +25,7 @@ requirements:
     - {{ compiler('c') }}
     - patch       # [not win]
     - m2-patch    # [win]
-   host:
+  host:
     - gmp             # [unix]
     - mpir            # [win]
     - mpfr
