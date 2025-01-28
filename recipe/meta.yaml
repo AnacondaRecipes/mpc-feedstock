@@ -1,55 +1,69 @@
-{% set version = "1.1.0" %}
+{% set version = "1.3.1" %}
+{% set lib_major_version = "3" %}
 
 package:
   name: mpc
   version: {{ version }}
 
 source:
-  fn: mpc-{{ version }}.tar.gz
   url: https://ftp.gnu.org/gnu/mpc/mpc-{{ version }}.tar.gz
-  sha256: 6985c538143c1208dcb1ac42cedad6ff52e267b47e5f970183a3e75125b43c2e
-  patches:
-  - patches/build-vc14.patch
+  sha256: ab642492f5cf882b74aa0cb730cd410a81edcdbec895183ce930e706c1c759b8
 
 build:
-  skip: True  # [win and vc<14]
-  number: 1
+  number: 0
   run_exports:
     - {{ pin_subpackage("mpc") }}
+  script_env:
+    # Sets values in win_build/CMakeList.txt
+    - PROJECT_VERSION={{ version }}                  # [win]
+    - LIB_MAJOR_VERSION={{ lib_major_version }}      # [win]
 
 requirements:
   build:
+    - {{ compiler('c') }}
     - libtool         # [unix]
     - m4              # [unix]
     - make            # [unix]
-    - {{ compiler('c') }}
-    - patch       # [not win]
-    - m2-patch    # [win]
   host:
-    - gmp             # [unix]
-    - mpir            # [win]
-    - mpfr
-  run:
-    - gmp             # [unix]
-    - mpir            # [win]
-    - mpfr
+    - gmp >=5.0.0
+    - mpfr >=4.1.0
 
 test:
+  requires:
+    - {{ compiler('c') }}
+    - libtool         # [unix]
+    - m4              # [unix]
+  files:
+    - test.c
   commands:
-    - if not exist %LIBRARY_INC%\\mpc.h exit 1                  # [win]
-    - if not exist %LIBRARY_LIB%\\mpc.lib exit 1                # [win]
-    - if not exist %LIBRARY_BIN%\\mpc.dll exit 1                # [win]
-    - if not exist %LIBRARY_LIB%\\mpc_static.lib exit 1         # [win]
-    - test -f ${PREFIX}/include/mpc.h                           # [unix]
-    - test -f ${PREFIX}/lib/libmpc.a                            # [unix]
-    - test -f ${PREFIX}/lib/libmpc.dylib                        # [osx]
-    - test -f ${PREFIX}/lib/libmpc.so                           # [linux]
+    - test -f ${PREFIX}/lib/libmpc{{ SHLIB_EXT }}.{{ lib_major_version }} || (echo "Failed to find libmpc{{ SHLIB_EXT }}.{{ lib_major_version }}" && exit 1)  # [linux]
+    - test -f ${PREFIX}/lib/libmpc.{{ lib_major_version }}{{ SHLIB_EXT }} || (echo "Failed to find libmpc.{{ lib_major_version }}{{ SHLIB_EXT }}" && exit 1)  # [osx]
+    - test -f ${PREFIX}/lib/libmpc{{ SHLIB_EXT }} || (echo "Failed to find libmpc{{ SHLIB_EXT }}" && exit 2)          # [unix]
+    - test -f ${PREFIX}/lib/libmpc.a || (echo "Failed to find libmpc.a" && exit 3)                                    # [unix]
+    - ${CC} -L$PREFIX/lib -I$PREFIX/include -lmpc -lmpfr -lgmp -Wl,-rpath,$PREFIX/lib $RECIPE_DIR/test.c -o test.o    # [unix]
+    - ./test.o                                                                                                        # [unix]
+    - if not exist %LIBRARY_INC%\mpc.h exit 1                               # [win]
+    - if not exist %LIBRARY_BIN%\mpc.dll exit 2                             # [win]
+    - if not exist %LIBRARY_BIN%\libmpc-{{ lib_major_version }}.dll exit 3  # [win]
+    - if not exist %LIBRARY_LIB%\libmpc.dll.a exit 4                        # [win]
+    - if not exist %LIBRARY_LIB%\libmpc.lib exit 5                          # [win]
+    - if not exist %LIBRARY_LIB%\mpc.lib exit 6                             # [win]
+    # Test whether libmpc.dll.a and mpc.lib work.
+    - cl.exe -I%LIBRARY_INC% %RECIPE_DIR%\test.c /Fe"%cd%\test.exe" /link /LIBPATH:"%LIBRARY_LIB%" libmpc.dll.a  # [win]
+    - .\test.exe                                                                                                 # [win]
+    - cl.exe -I%LIBRARY_INC% %RECIPE_DIR%\test.c /Fe"%cd%\test.exe" /link /LIBPATH:"%LIBRARY_LIB%" mpc.lib       # [win]
+    - .\test.exe                                                                                                 # [win]
 
 about:
-  home: http://www.multiprecision.org/
-  license: LGPL-3-or-later
+  home: https://www.multiprecision.org/
+  license: LGPL-3.0-or-later
   license_file: {{ SRC_DIR }}/COPYING.LESSER
+  license_family: LGPL
   summary: A C library for the arithmetic of complex numbers with arbitrarily high precision.
+  description: GNU MPC is a complex floating-point library with exact rounding. It is based on the GNU MPFR
+    floating-point library (https://www.mpfr.org/), which is itself based on the GNU MP library (https://gmplib.org/).
+  dev_url: https://gitlab.inria.fr/mpc/mpc
+  doc_url: https://www.multiprecision.org/downloads/mpc-1.3.1.pdf
 
 extra:
   recipe-maintainers:
